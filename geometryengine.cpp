@@ -201,7 +201,8 @@ void GeometryEngine::initPlaneGeometry()
         float X = 2*(i%16)/15.0f-1 ; float Y = 2*(i/16)/15.0f-1;
         float U = (i%16)/15.0f; float V = (i/16)/15.0f;
         float Z = heightMap.pixelColor(i%16,i/16).red()/255.0f*0.25f;
-        vertices[i] = {QVector3D(X,Y,Z), QVector2D(U,V)};
+        vertices[i] = {QVector3D(X,Y,Z),
+                       QVector2D((heightMap.pixelColor(i%16,i/16).value()/255.0f)*0.98+0.01,0)};
     }
 
     // Indices for drawing cube faces using triangle strips.

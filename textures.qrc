@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>cube.png</file>
         <file>HeightMap.png</file>
+        <file>TextureDegrade.png</file>
     </qresource>
 </RCC>
