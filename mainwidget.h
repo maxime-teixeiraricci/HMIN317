@@ -53,6 +53,7 @@
 
 #include "geometryengine.h"
 
+#include <math.h>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
@@ -69,12 +70,13 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit MainWidget(QWidget *parent = 0);
+    explicit MainWidget(double frequence, QWidget *parent = 0);
     ~MainWidget();
 
 protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void timerEvent(QTimerEvent *e) override;
 
     void initializeGL() override;
@@ -97,7 +99,11 @@ private:
     QVector3D rotationAxis;
     qreal angularSpeed;
     QQuaternion rotation;
-    float time;
+
+    double time;
+    double timeScale;
+    double applicationTime;
+    double timeFrequence;
 };
 
 #endif // MAINWIDGET_H

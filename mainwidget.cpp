@@ -54,12 +54,15 @@
 
 #include <math.h>
 
-MainWidget::MainWidget(QWidget *parent) :
+MainWidget::MainWidget(double frequence,QWidget *parent) :
     QOpenGLWidget(parent),
     geometries(0),
     texture(0),
-    angularSpeed(0)
+    angularSpeed(0),
+    timeScale(1.0f)
+
 {
+    timeFrequence = 1.0/frequence*1000;
 }
 
 MainWidget::~MainWidget()
@@ -81,6 +84,7 @@ void MainWidget::mousePressEvent(QMouseEvent *e)
 
 void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 {
+
     // Mouse release position - mouse press position
     QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
 
@@ -103,6 +107,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 //! [1]
 void MainWidget::timerEvent(QTimerEvent *)
 {
+    applicationTime += 0.1 * timeScale;
     // Decrease angular speed (friction)
     angularSpeed *= 0.99;
     //angularSpeed =1;
@@ -115,10 +120,24 @@ void MainWidget::timerEvent(QTimerEvent *)
         rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
         //rotationAxis = QVector3D(0.0,0.0,1.0)*100;
         // Request an update
-        update();
+
     }
+    update();
 }
 //! [1]
+
+void MainWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Up)
+    {
+        timeScale += 0.1;
+    }
+    else if (event->key() == Qt::Key_Down)
+    {
+        timeScale -= 0.1;
+    }
+    update();
+}
 
 void MainWidget::initializeGL()
 {
@@ -140,7 +159,7 @@ void MainWidget::initializeGL()
     geometries = new GeometryEngine;
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(12, this);
+    timer.start(timeFrequence, this);
 }
 
 //! [3]
@@ -209,8 +228,12 @@ void MainWidget::paintGL()
 //! [6]
     // Calculate model view transformation
     QMatrix4x4 matrix;
-    matrix.translate(0.0, 0.5, -5.0);
-    matrix.rotate(rotation);
+    //matrix.translate(0.0, 0, .0);
+    //matrix.rotate(rotation);
+
+    matrix.lookAt(QVector3D(3*sin(applicationTime),3*cos(applicationTime),3), // Eye
+                  QVector3D(0,0,0), // Center
+                  QVector3D(0,0,1)); // Normal
 
     // Set modelview-projection matrix
     program.setUniformValue("mvp_matrix", projection * matrix);
