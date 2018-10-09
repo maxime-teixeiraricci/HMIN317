@@ -235,7 +235,7 @@ void MainWidget::paintGL()
                   QVector3D(0,0,0), // Center
                   QVector3D(0,0,1)); // Normal
 
-    // Set modelview-projection matrix
+    // Set modelview-projection matrixç
     program.setUniformValue("mvp_matrix", projection * matrix);
 //! [6]
 
