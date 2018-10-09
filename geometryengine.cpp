@@ -193,16 +193,19 @@ void GeometryEngine::initPlaneGeometry()
     QImage heightMap = QImage(":/HeightMap.png");
 
 
+
     ///Faire la height map en utilisant les pixels.
 
 
     for (int i = 0; i < numberVertices; i++)
     {
         float X = 2*(i%16)/15.0f-1 ; float Y = 2*(i/16)/15.0f-1;
-        float U = (i%16)/15.0f; float V = (i/16)/15.0f;
-        float Z = heightMap.pixelColor(i%16,i/16).red()/255.0f*0.25f;
+        int heightX = (int) ((i%16)/15.0f*heightMap.height());
+        int heightY = (int) ((i/16)/15.0f * heightMap.width());
+
+        float Z = heightMap.pixelColor(heightX, heightY).value()/255.0f*0.25f;
         vertices[i] = {QVector3D(X,Y,Z),
-                       QVector2D((heightMap.pixelColor(i%16,i/16).value()/255.0f)*0.98+0.01,0)};
+                       QVector2D((heightMap.pixelColor(heightX, heightY).value()/255.0f)*0.98+0.01,0)};
     }
 
     // Indices for drawing cube faces using triangle strips.
