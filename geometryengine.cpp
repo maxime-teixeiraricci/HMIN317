@@ -190,7 +190,8 @@ void GeometryEngine::initPlaneGeometry()
     int numberVertices = 16*16;
     int numberTriangles=8*8*2*3;
     VertexData vertices[16*16];
-    QImage heightMap = QImage(":/HeightMap.png");
+    QImage heightMap = QImage(":/cube.png");
+
 
 
 
@@ -200,12 +201,13 @@ void GeometryEngine::initPlaneGeometry()
     for (int i = 0; i < numberVertices; i++)
     {
         float X = 2*(i%16)/15.0f-1 ; float Y = 2*(i/16)/15.0f-1;
-        int heightX = (int) ((i%16)/15.0f*heightMap.height());
-        int heightY = (int) ((i/16)/15.0f * heightMap.width());
-
-        float Z = heightMap.pixelColor(heightX, heightY).value()/255.0f*0.25f;
+        int heightX = (int) ((i%16)/15.0f*heightMap.width());
+        int heightY = (int) ((i/16)/15.0f * heightMap.height());
+        QColor colorHeight = heightMap.pixelColor(heightX, heightY);
+        int greyComponent = qGray(colorHeight.red(),colorHeight.green(),colorHeight.blue());
+        float Z = greyComponent/255.0f*0.25f;
         vertices[i] = {QVector3D(X,Y,Z),
-                       QVector2D((heightMap.pixelColor(heightX, heightY).value()/255.0f)*0.98+0.01,0)};
+                       QVector2D((greyComponent/255.0f)*0.98+0.01,0)};
     }
 
     // Indices for drawing cube faces using triangle strips.

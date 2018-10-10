@@ -52,6 +52,7 @@
 #define GEOMETRYENGINE_H
 
 #include <QImage>
+#include <QColor>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
