@@ -53,7 +53,7 @@
 
 #include "geometryengine.h"
 
-#include <math.h>
+//#include <math.h>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
@@ -70,8 +70,14 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit MainWidget(double frequence, QWidget *parent = 0);
+    explicit MainWidget(double frequence, int seasonStart, QWidget *parent = 0);
     ~MainWidget();
+    int z = 0;
+    int season = 0;
+   std::vector<QOpenGLTexture *> textures;
+
+public slots:
+     void seasonChange();
 
 protected:
     void mousePressEvent(QMouseEvent *e) override;
@@ -89,7 +95,8 @@ protected:
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram program;
-    GeometryEngine *geometries;
+    GeometryEngine *geometries1;
+    GeometryEngine *geometries2;
 
     QOpenGLTexture *texture;
 

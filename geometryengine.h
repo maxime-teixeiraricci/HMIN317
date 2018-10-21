@@ -51,11 +51,11 @@
 #ifndef GEOMETRYENGINE_H
 #define GEOMETRYENGINE_H
 
-#include <QImage>
-#include <QColor>
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
+
 
 class GeometryEngine : protected QOpenGLFunctions
 {
@@ -65,10 +65,16 @@ public:
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawPlaneGeometry(QOpenGLShaderProgram *program);
+    void MeshDisplay(QOpenGLShaderProgram *program);
+    bool Mesh();
+    //objl::Loader loader;
+    int z;
+    int numberVertices;
 
 private:
     void initCubeGeometry();
     void initPlaneGeometry();
+
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;

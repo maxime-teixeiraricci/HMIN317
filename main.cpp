@@ -54,6 +54,7 @@
 
 #ifndef QT_NO_OPENGL
 #include "mainwidget.h"
+#include <QTimer>
 #endif
 
 int main(int argc, char *argv[])
@@ -67,19 +68,28 @@ int main(int argc, char *argv[])
     app.setApplicationName("cube");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-    MainWidget widget1(1);
-    MainWidget widget2(10);
-    MainWidget widget3(100);
-    MainWidget widget4(1000);
+    MainWidget widget1(50,0);
+    MainWidget widget2(50,1);
+    MainWidget widget3(50,2);
+    MainWidget widget4(50,3);
 
-    app.setApplicationName("Plane 1FPS");
+   QTimer *timer1 = new QTimer();
+   QTimer *timer2 = new QTimer();
+    /*QObject::connect(timer1, SIGNAL(timeout()), &widget1, SLOT(seasonChange()));
+    QObject::connect(timer1, SIGNAL(timeout()), &widget2, SLOT(seasonChange()));
+    QObject::connect(timer1, SIGNAL(timeout()), &widget3, SLOT(seasonChange()));
+    QObject::connect(timer1, SIGNAL(timeout()), &widget4, SLOT(seasonChange()));*/
+
+    app.setApplicationName("Plane 1");
     widget1.show();
-    app.setApplicationName("Plane 10FPS");
-    widget2.show();
-    app.setApplicationName("Plane 100FPS");
-    widget3.show();
-    app.setApplicationName("Plane 1000FPS");
-    widget4.show();
+    app.setApplicationName("Plane 2");
+   // widget2.show();
+    app.setApplicationName("Plane 3");
+  //  widget3.show();
+    app.setApplicationName("Plane 4");
+  //  widget4.show();
+    timer1->start(1000);
+   // timer2->start(2000);
 
 #else
     QLabel note("OpenGL Support required");

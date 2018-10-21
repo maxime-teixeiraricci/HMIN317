@@ -51,18 +51,21 @@
 #include "mainwidget.h"
 
 #include <QMouseEvent>
+#include <iostream>
+//#include <math.h>
 
-#include <math.h>
-
-MainWidget::MainWidget(double frequence,QWidget *parent) :
+MainWidget::MainWidget(double frequence, int seasonStart,QWidget *parent) :
     QOpenGLWidget(parent),
-    geometries(0),
+    geometries1(0),
+    geometries2(0),
     texture(0),
     angularSpeed(0),
     timeScale(1.0f)
 
 {
     timeFrequence = 1.0/frequence*1000;
+    season = seasonStart;
+
 }
 
 MainWidget::~MainWidget()
@@ -71,7 +74,8 @@ MainWidget::~MainWidget()
     // and the buffers.
     makeCurrent();
     delete texture;
-    delete geometries;
+    delete geometries1;
+    delete geometries2;
     doneCurrent();
 }
 
@@ -156,10 +160,18 @@ void MainWidget::initializeGL()
     glEnable( GL_FRONT);
 //! [2]
 
-    geometries = new GeometryEngine;
+    geometries1 = new GeometryEngine;
+    geometries2 = new GeometryEngine;
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(timeFrequence, this);
+   timer.start(timeFrequence, this);
+}
+
+void MainWidget::seasonChange()
+{
+   season = (season + 1) % 4;
+   texture = textures[season];
+
 }
 
 //! [3]
@@ -188,7 +200,6 @@ void MainWidget::initTextures()
 {
     // Load cube.png image
     texture = new QOpenGLTexture(QImage(":/TextureDegrade.png").mirrored());
-
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
 
@@ -198,6 +209,18 @@ void MainWidget::initTextures()
     // Wrap texture coordinates by repeating
     // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
     texture->setWrapMode(QOpenGLTexture::Repeat);
+
+
+    textures.push_back(new QOpenGLTexture(QImage(":/spring.png").mirrored()));
+    textures.push_back(new QOpenGLTexture(QImage(":/summer.png").mirrored()));
+    textures.push_back(new QOpenGLTexture(QImage(":/fall.png").mirrored()));
+    textures.push_back(new QOpenGLTexture(QImage(":/winter.png").mirrored()));
+    for (unsigned i=0; i < 4; i ++)
+    {
+        textures[i]->setMinificationFilter(QOpenGLTexture::Nearest);
+        textures[i]->setMagnificationFilter(QOpenGLTexture::Linear);
+        textures[i]->setWrapMode(QOpenGLTexture::Repeat);
+    }
 }
 //! [4]
 
@@ -244,5 +267,7 @@ void MainWidget::paintGL()
 
     // Draw cube geometry
     //geometries->drawCubeGeometry(&program);
-    geometries->drawPlaneGeometry(&program);
+
+    geometries1->MeshDisplay(&program);
+    geometries2->drawPlaneGeometry(&program);
 }

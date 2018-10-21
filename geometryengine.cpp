@@ -50,9 +50,14 @@
 
 #include "geometryengine.h"
 #include <iostream>
+#include <QFile>
+#include <stdio.h>
 using namespace std;
 #include <QVector2D>
 #include <QVector3D>
+#include <QColor>
+#include <QImage>
+
 
 struct VertexData
 {
@@ -72,6 +77,8 @@ GeometryEngine::GeometryEngine()
 
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
+
+    Mesh();
     initPlaneGeometry();
 }
 
@@ -81,6 +88,105 @@ GeometryEngine::~GeometryEngine()
     indexBuf.destroy();
 }
 //! [0]
+
+bool GeometryEngine::Mesh()
+{
+    std::vector< GLushort > vertexIndices, uvIndices, normalIndices;
+    std::vector<QVector3D> temp_vertices;
+    std::vector<QVector2D> temp_uvs;
+    std::vector<QVector3D> temp_normals;
+    QFile file("C:/Users/Maxime/Documents/HMIN317/small_cube.obj");
+    file.open(QFile::ReadOnly);
+    //FILE * file = fopen("C:\Users\Maxime\Documents\HMIN317\cube.obj", "r");
+    if( file.exists() == NULL )
+    {
+        std::cout<<"Impossible to open the file !\n"<<endl;
+        return false;
+    }
+    std::cout<<"Modele chargée !" << endl;
+    int done = 1;
+    while( done )
+    {
+        char lineHeader[128];
+        // read the first word of the line
+
+        int res = file.readLine(lineHeader, 128);
+        if (res == EOF)
+        {
+            done = 0; // EOF = End Of File. Quit the loop.
+        }
+        if ( lineHeader[0] == 'v' && lineHeader[1] != 't' && lineHeader[1] != 'n'){
+            float X,Y,Z;
+            QVector3D vertex;
+
+            sscanf_s(lineHeader, "v %f %f %f\n", &X,&Y,&Z);
+            vertex.setX(X);
+            vertex.setY(Y);
+            vertex.setZ(Z);
+            temp_vertices.push_back(vertex);
+        }else if ( lineHeader[0] == 'v' && lineHeader[1] == 't'){
+            float X,Y;
+            QVector2D uv;
+            sscanf_s(lineHeader, "vt %f %f\n", &X, &Y );
+            uv.setX(X);
+            uv.setY(Y);
+            temp_uvs.push_back(uv);
+        }else if ( lineHeader[0] == 'f' )
+        {
+            std::string vertex1, vertex2, vertex3;
+            GLushort vertexIndex[3], uvIndex[3], normalIndex[3];
+            int matches = sscanf_s(lineHeader, "f %d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+
+            if (matches != 9)
+            {
+                printf("File can't be read by our simple parser : ( Try exporting with other options\n");
+                return false;
+            }
+            vertexIndices.push_back(vertexIndex[0]-1);
+            vertexIndices.push_back(vertexIndex[1]-1);
+            vertexIndices.push_back(vertexIndex[2]-1);
+            uvIndices    .push_back(uvIndex[0]);
+            uvIndices    .push_back(uvIndex[1]);
+            uvIndices    .push_back(uvIndex[2]);
+            normalIndices.push_back(normalIndex[0]);
+            normalIndices.push_back(normalIndex[1]);
+            normalIndices.push_back(normalIndex[2]);
+        }
+    }
+    // For each vertex of each triangle
+    VertexData *outVertexData = new VertexData[temp_vertices.size()];
+    for( unsigned int i=0; i < temp_vertices.size(); i++ )
+    {
+       /*
+        * VertexData vertices[] = {
+            // Vertex data for face 0
+            {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.0f, 0.0f)}
+
+        unsigned int vertexIndex = vertexIndices[i];
+        unsigned int uvIndex = uvIndices[i];*/
+        QVector3D vertex = temp_vertices[ i ];
+        QVector2D texture = temp_uvs[ i ];
+        outVertexData[i] = {vertex, texture};
+
+    }
+
+    arrayBuf.bind();
+    arrayBuf.allocate(outVertexData, temp_vertices.size() * sizeof(VertexData));
+
+    // Transfer index data to VBO 1
+    indexBuf.bind();
+    indexBuf.allocate(vertexIndices.data(), vertexIndices.size() * sizeof(GLushort));
+
+    numberVertices = vertexIndices.size();
+    file.close();
+
+    cout<<"FINII ! "<< endl;
+    return true;
+
+}
+
+
+
 
 void GeometryEngine::initCubeGeometry()
 {
@@ -186,7 +292,7 @@ void GeometryEngine::initPlaneGeometry()
     // duplicate vertex for each face because texture coordinate
     // is different.
 
-
+    cout << z << endl;
     int numberVertices = 16*16;
     int numberTriangles=8*8*2*3;
     VertexData vertices[16*16];
@@ -204,10 +310,8 @@ void GeometryEngine::initPlaneGeometry()
         int heightX = (int) ((i%16)/15.0f*heightMap.width());
         int heightY = (int) ((i/16)/15.0f * heightMap.height());
         QColor colorHeight = heightMap.pixelColor(heightX, heightY);
-        int greyComponent = qGray(colorHeight.red(),colorHeight.green(),colorHeight.blue());
-        float Z = greyComponent/255.0f*0.25f;
-        vertices[i] = {QVector3D(X,Y,Z),
-                       QVector2D((greyComponent/255.0f)*0.98+0.01,0)};
+        vertices[i] = {QVector3D(X,Y,0),
+                       QVector2D((i%16)/15.0f, (i/16)/15.0f)};
     }
 
     // Indices for drawing cube faces using triangle strips.
@@ -280,3 +384,30 @@ void GeometryEngine::drawPlaneGeometry(QOpenGLShaderProgram *program)
     // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLES, 15*15*6, GL_UNSIGNED_SHORT, 0);
 }
+
+void GeometryEngine::MeshDisplay(QOpenGLShaderProgram *program)
+{
+    // Tell OpenGL which VBOs to use
+    arrayBuf.bind();
+    indexBuf.bind();
+
+    // Offset for position
+    quintptr offset = 0;
+
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+    // Offset for texture coordinate
+    offset += sizeof(QVector3D);
+
+    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+    int texcoordLocation = program->attributeLocation("a_texcoord");
+    program->enableAttributeArray(texcoordLocation);
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+
+    // Draw cube geometry using indices from VBO 1
+    glDrawElements(GL_TRIANGLES, numberVertices*3, GL_UNSIGNED_SHORT, 0);
+}
+
